@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|VisualGDB">
+      <Configuration>Debug</Configuration>
+      <Platform>VisualGDB</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|VisualGDB">
+      <Configuration>Release</Configuration>
+      <Platform>VisualGDB</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B8F5576A-BE9C-451A-8C31-E8C9B5A0A9E8}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
+    <MCUPropertyListFile>$(ProjectDir)mcu.props</MCUPropertyListFile>
+    <GenerateBinFile>false</GenerateBinFile>
+    <GenerateHexFile>true</GenerateHexFile>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
+    <MCUPropertyListFile>$(ProjectDir)mcu.props</MCUPropertyListFile>
+    <GenerateBinFile>false</GenerateBinFile>
+    <GenerateHexFile>true</GenerateHexFile>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
+    <GNUConfigurationType>Debug</GNUConfigurationType>
+    <Toolchain>D:\msys32\home\Slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0</Toolchain>
+    <OutDir>..\bin\$(ProjectName)-$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>..\temp\$(ProjectName)-$(Configuration)-$(Platform)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
+    <Toolchain>D:\msys32\home\Slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0</Toolchain>
+    <OutDir>..\bin\$(ProjectName)-$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>..\temp\$(ProjectName)-$(Configuration)-$(Platform)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
+    <ToolchainSettingsContainer>
+      <InstructionSet>THUMB</InstructionSet>
+    </ToolchainSettingsContainer>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
+    <ToolchainSettingsContainer>
+      <FloatABI>soft</FloatABI>
+    </ToolchainSettingsContainer>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
+    <ToolchainSettingsContainer>
+      <ARMCPU>cortex-m3</ARMCPU>
+    </ToolchainSettingsContainer>
+    <ClCompile>
+      <PositionIndependentCode>false</PositionIndependentCode>
+    </ClCompile>
+    <ClCompile>
+      <CLanguageStandard>GNU11</CLanguageStandard>
+    </ClCompile>
+    <ClCompile>
+      <CPPLanguageStandard>GNUPP1Z</CPPLanguageStandard>
+      <Optimization>O2</Optimization>
+      <PreprocessorDefinitions>STM32F10X_HD;STM32F103xE;%(ClCompile.PreprocessorDefinitions);NDEBUG=1;RELEASE=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src;..\src\3rdParty\scmRTOS\port\cortex\mx-gcc;..\src\3rdParty\scmRTOS\core;..\src\3rdParty\Drivers\CMSIS\Include;..\src\3rdParty\Drivers\CMSIS\Device\ST\STM32F1xx\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat />
+      <AdditionalOptions>-pipe %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-nostartfiles -specs=nano.specs %(AdditionalOptions)</AdditionalOptions>
+      <LinkerScript>../src/STM32F103RCTx_FLASH.ld</LinkerScript>
+      <GenerateMapFile>true</GenerateMapFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
+    <ToolchainSettingsContainer>
+      <InstructionSet>THUMB</InstructionSet>
+    </ToolchainSettingsContainer>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
+    <ToolchainSettingsContainer>
+      <FloatABI>soft</FloatABI>
+    </ToolchainSettingsContainer>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
+    <ToolchainSettingsContainer>
+      <ARMCPU>cortex-m3</ARMCPU>
+    </ToolchainSettingsContainer>
+    <ClCompile>
+      <PositionIndependentCode>false</PositionIndependentCode>
+    </ClCompile>
+    <ClCompile>
+      <CLanguageStandard>GNU11</CLanguageStandard>
+    </ClCompile>
+    <ClCompile>
+      <CPPLanguageStandard>GNUPP1Z</CPPLanguageStandard>
+      <PreprocessorDefinitions>STM32F10X_HD;STM32F103xE;%(ClCompile.PreprocessorDefinitions);DEBUG=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src;..\src\3rdParty\scmRTOS\port\cortex\mx-gcc;..\src\3rdParty\scmRTOS\core;..\src\3rdParty\Drivers\CMSIS\Include;..\src\3rdParty\Drivers\CMSIS\Device\ST\STM32F1xx\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Og</Optimization>
+      <AdditionalOptions>-pipe %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-nostartfiles -specs=nano.specs %(AdditionalOptions)</AdditionalOptions>
+      <LinkerScript>../src/STM32F103RCTx_FLASH.ld</LinkerScript>
+      <GenerateMapFile>true</GenerateMapFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="mcu.props" />
+    <None Include="USBEncoder-Debug.vgdbsettings" />
+    <None Include="USBEncoder-Release.vgdbsettings" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="MCU.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\os_kernel.h" />
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\os_services.h" />
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\scmRTOS.h" />
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\scmRTOS_defs.h" />
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\usrlib.h" />
+    <ClInclude Include="..\src\3rdParty\scmRTOS\ext\profiler\profiler.h" />
+    <ClInclude Include="..\src\3rdParty\scmRTOS\ext\recursive-mutex\recursive_mutex.h" />
+    <ClInclude Include="..\src\3rdParty\scmRTOS\ext\round-robin\round-robin.h" />
+    <ClInclude Include="..\src\3rdParty\scmRTOS\port\cortex\mx-gcc\os_target.h" />
+    <ClInclude Include="..\src\commdef.hpp" />
+    <ClInclude Include="..\src\procsdef.hpp" />
+    <ClInclude Include="..\src\scmRTOS_CONFIG.h" />
+    <ClInclude Include="..\src\scmRTOS_extensions.h" />
+    <ClInclude Include="..\src\scmRTOS_TARGET_CFG.h" />
+    <ClInclude Include="..\src\usb.hpp" />
+    <ClInclude Include="..\src\usbHwRegs.hpp" />
+    <ClInclude Include="..\src\usbdefs.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\3rdParty\scmRTOS\core\os_kernel.cpp" />
+    <ClCompile Include="..\src\3rdParty\scmRTOS\core\os_services.cpp" />
+    <ClCompile Include="..\src\3rdParty\scmRTOS\core\usrlib.cpp" />
+    <ClCompile Include="..\src\3rdParty\scmRTOS\ext\recursive-mutex\recursive_mutex.cpp" />
+    <ClCompile Include="..\src\3rdParty\scmRTOS\port\cortex\mx-gcc\os_target.cpp" />
+    <ClCompile Include="..\src\startup.cpp" />
+    <ClCompile Include="..\src\sysinit.cpp" />
+    <ClCompile Include="..\src\usb.cpp" />
+    <ClCompile Include="..\src\USBEncoder.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

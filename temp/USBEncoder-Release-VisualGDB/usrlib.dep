@@ -1,0 +1,26 @@
+../temp/USBEncoder-Release-VisualGDB/usrlib.o: \
+ D:/my_exp/USBEncoder/src/3rdParty/scmRTOS/core/usrlib.cpp \
+ ../src/3rdParty/scmRTOS/core/usrlib.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\lib\gcc\arm-none-eabi\7.1.0\include\stdint.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\stdint.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\machine\_default_types.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\features.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\_newlib_version.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\_intsup.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\_stdint.h
+
+../src/3rdParty/scmRTOS/core/usrlib.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\lib\gcc\arm-none-eabi\7.1.0\include\stdint.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\stdint.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\machine\_default_types.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\features.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\_newlib_version.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\_intsup.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\_stdint.h:

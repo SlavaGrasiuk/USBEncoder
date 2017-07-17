@@ -1,0 +1,54 @@
+../temp/USBEncoder-Debug-VisualGDB/recursive_mutex.o: \
+ D:/my_exp/USBEncoder/src/3rdParty/scmRTOS/ext/recursive-mutex/recursive_mutex.cpp \
+ D:/my_exp/USBEncoder/src/3rdParty/scmRTOS/ext/recursive-mutex/recursive_mutex.h \
+ ../src/3rdParty/scmRTOS/core/scmRTOS.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\lib\gcc\arm-none-eabi\7.1.0\include\stddef.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\lib\gcc\arm-none-eabi\7.1.0\include\stdint.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\stdint.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\machine\_default_types.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\features.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\_newlib_version.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\_intsup.h \
+ d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\_stdint.h \
+ ../src/3rdParty/scmRTOS/core/usrlib.h \
+ ../src/3rdParty/scmRTOS/port/cortex/mx-gcc/os_target.h \
+ ../src/scmRTOS_CONFIG.h ../src/scmRTOS_TARGET_CFG.h \
+ ../src/3rdParty/scmRTOS/core/scmRTOS_defs.h \
+ ../src/3rdParty/scmRTOS/core/os_kernel.h \
+ ../src/3rdParty/scmRTOS/core/os_services.h ../src/scmRTOS_extensions.h
+
+D:/my_exp/USBEncoder/src/3rdParty/scmRTOS/ext/recursive-mutex/recursive_mutex.h:
+
+../src/3rdParty/scmRTOS/core/scmRTOS.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\lib\gcc\arm-none-eabi\7.1.0\include\stddef.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\lib\gcc\arm-none-eabi\7.1.0\include\stdint.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\stdint.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\machine\_default_types.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\features.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\_newlib_version.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\_intsup.h:
+
+d:\msys32\home\slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0\arm-none-eabi\include\sys\_stdint.h:
+
+../src/3rdParty/scmRTOS/core/usrlib.h:
+
+../src/3rdParty/scmRTOS/port/cortex/mx-gcc/os_target.h:
+
+../src/scmRTOS_CONFIG.h:
+
+../src/scmRTOS_TARGET_CFG.h:
+
+../src/3rdParty/scmRTOS/core/scmRTOS_defs.h:
+
+../src/3rdParty/scmRTOS/core/os_kernel.h:
+
+../src/3rdParty/scmRTOS/core/os_services.h:
+
+../src/scmRTOS_extensions.h:

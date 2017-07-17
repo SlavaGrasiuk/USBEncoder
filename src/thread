@@ -1,0 +1,47 @@
+#pragma once
+
+#include <chrono>
+#include <scmRTOS.h>
+#include <scmRTOS_TARGET_CFG.h>
+
+
+namespace std {
+	namespace this_thread {
+
+		/// sleep_for
+		template<typename _Rep, typename _Period>
+		inline void sleep_for(const chrono::duration<_Rep, _Period>& __rtime) {
+			if (__rtime <= __rtime.zero()) {
+				return;
+			}
+
+			using timePrecision = chrono::microseconds;
+
+			auto __us = chrono::duration_cast<timePrecision>(__rtime);
+
+			constexpr int64_t sysTickInterval = 1.0 / double(SYSTICKINTRATE) * timePrecision::period::den;	//in units of timePrecision
+			
+			OS::sleep(__us.count() / sysTickInterval);
+		}
+
+		/// sleep_until
+		template<typename _Clock, typename _Duration>
+		inline void	sleep_until(const chrono::time_point<_Clock, _Duration>& __atime) {
+			auto __now = _Clock::now();
+
+			if (_Clock::is_steady) {
+				if (__now < __atime) {
+					sleep_for(__atime - __now);
+				}
+				return;
+			}
+
+			while (__now < __atime) {
+				sleep_for(__atime - __now);
+				__now = _Clock::now();
+			}
+		}
+
+
+	}
+}

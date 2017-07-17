@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="VisualGDB settings">
+      <UniqueIdentifier>{8e5421eb-71a1-4159-89f7-7353acb6addf}</UniqueIdentifier>
+      <Extensions>*.vgdbsettings</Extensions>
+    </Filter>
+    <Filter Include="VisualGDB settings\Device-specific files">
+      <UniqueIdentifier>{9238b521-a64c-47e5-bb93-c94637541efd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scmRTOS">
+      <UniqueIdentifier>{5dbda405-a93d-4092-9ca6-e402117e2f76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scmRTOS\core">
+      <UniqueIdentifier>{363e285b-ca11-4046-9b2d-8ea8a2f9afaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scmRTOS\ext">
+      <UniqueIdentifier>{abfcd832-ad9b-4402-b5a1-f4affbbfd35f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scmRTOS\ext\profiler">
+      <UniqueIdentifier>{2557c3a2-7301-4280-972a-b587e38b53fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scmRTOS\ext\recursive-mutex">
+      <UniqueIdentifier>{d08363d5-1da9-4de2-84eb-6e60fb6bf1be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scmRTOS\ext\round-robin">
+      <UniqueIdentifier>{1c8c8592-0db2-46a0-bb70-e8e006747e47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scmRTOS\port">
+      <UniqueIdentifier>{9ac3b419-00fa-43d7-af95-8fd2846556f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scmRTOS\port\cortex">
+      <UniqueIdentifier>{2d0a349d-e767-40c4-9be2-98b5a17688c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scmRTOS\port\cortex\mx-gcc">
+      <UniqueIdentifier>{97639292-dcf2-4a68-9bf2-3a57b3db9273}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="USBEncoder-Debug.vgdbsettings">
+      <Filter>VisualGDB settings</Filter>
+    </None>
+    <None Include="USBEncoder-Release.vgdbsettings">
+      <Filter>VisualGDB settings</Filter>
+    </None>
+    <None Include="mcu.props">
+      <Filter>VisualGDB settings\Device-specific files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="MCU.xml">
+      <Filter>VisualGDB settings</Filter>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\procsdef.hpp" />
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\os_kernel.h">
+      <Filter>scmRTOS\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\os_services.h">
+      <Filter>scmRTOS\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\scmRTOS.h">
+      <Filter>scmRTOS\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\scmRTOS_defs.h">
+      <Filter>scmRTOS\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdParty\scmRTOS\core\usrlib.h">
+      <Filter>scmRTOS\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdParty\scmRTOS\ext\profiler\profiler.h">
+      <Filter>scmRTOS\ext\profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdParty\scmRTOS\ext\recursive-mutex\recursive_mutex.h">
+      <Filter>scmRTOS\ext\recursive-mutex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdParty\scmRTOS\ext\round-robin\round-robin.h">
+      <Filter>scmRTOS\ext\round-robin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdParty\scmRTOS\port\cortex\mx-gcc\os_target.h">
+      <Filter>scmRTOS\port\cortex\mx-gcc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\scmRTOS_TARGET_CFG.h">
+      <Filter>scmRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\scmRTOS_extensions.h">
+      <Filter>scmRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\scmRTOS_CONFIG.h">
+      <Filter>scmRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\commdef.hpp" />
+    <ClInclude Include="..\src\usb.hpp" />
+    <ClInclude Include="..\src\usbHwRegs.hpp" />
+    <ClInclude Include="..\src\usbdefs.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\startup.cpp" />
+    <ClCompile Include="..\src\sysinit.cpp" />
+    <ClCompile Include="..\src\3rdParty\scmRTOS\core\os_kernel.cpp">
+      <Filter>scmRTOS\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\3rdParty\scmRTOS\core\os_services.cpp">
+      <Filter>scmRTOS\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\3rdParty\scmRTOS\core\usrlib.cpp">
+      <Filter>scmRTOS\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\3rdParty\scmRTOS\ext\recursive-mutex\recursive_mutex.cpp">
+      <Filter>scmRTOS\ext\recursive-mutex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\3rdParty\scmRTOS\port\cortex\mx-gcc\os_target.cpp">
+      <Filter>scmRTOS\port\cortex\mx-gcc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\USBEncoder.cpp" />
+    <ClCompile Include="..\src\usb.cpp" />
+  </ItemGroup>
+</Project>
