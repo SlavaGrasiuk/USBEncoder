@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <EmbeddedProfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <ToolchainID>2d6fc4c8-e018-43cd-981f-9252f115c5eb</ToolchainID>
+  <ToolchainID>gcc-arm-none-eabi-7.1.0</ToolchainID>
   <BspID>com.visualgdb.bsp.in-place</BspID>
   <BspVersion>1.0</BspVersion>
   <MCUDefinitionFile>$(ProjectDir)\STM32F103xx.mcudef</MCUDefinitionFile>
