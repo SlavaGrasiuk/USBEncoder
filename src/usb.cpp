@@ -1,8 +1,17 @@
 #include "usb.hpp"
 #include "usbHwRegs.hpp"
 #include "usbdefs.hpp"
+#include "commdef.hpp"
 #include <scmRTOS_TARGET_CFG.h>
 
+
+
+#define  USBD_IDX_LANGID_STR                            0x00 
+#define  USBD_IDX_MFC_STR                               0x01 
+#define  USBD_IDX_PRODUCT_STR                           0x02
+#define  USBD_IDX_SERIAL_STR                            0x03 
+#define  USBD_IDX_CONFIG_STR                            0x04 
+#define  USBD_IDX_INTERFACE_STR                         0x05 
 
 
 static const USBDeviceDescriptor g_devDesc = {
@@ -16,9 +25,9 @@ static const USBDeviceDescriptor g_devDesc = {
 	1155,		//VID
 	22315,		//PID
 	0x02'00,
-	1,			//manufacturer string
-	2,			//prodict string
-	3,			//serial numder string
+	USBD_IDX_MFC_STR,
+	USBD_IDX_PRODUCT_STR,
+	USBD_IDX_SERIAL_STR,
 	1
 };
 
@@ -50,79 +59,174 @@ ReadPMA
 */
 static void ReadPMA(uint8_t *out, const uint16_t PMABufAddr, const uint16_t byteCnt) noexcept {
 	auto dataOut = reinterpret_cast<uint16_t*>(out);
-	auto pma = reinterpret_cast<uint32_t*>(USB_PMAADDR + (PMABufAddr << 1));
+	auto pma = reinterpret_cast<const uint32_t*>(USB_PMAADDR + (PMABufAddr << 1));
+
 	for (auto i = 0; i < (byteCnt + 1) >> 1; i++) {
 		*dataOut++ = *pma++;
 	}
 }
 
+
+#pragma region Control Pipe
+
 static class ControlPipe {
 	const uint8_t *m_data;
 	int m_len, m_remainLen;
 
+private:
+	enum class TransferStage {
+		Setup,
+		DataIN,
+		DataOUT,
+		StatusIN,
+		StatusOUT
+	} m_transferState;
+
 public:
-	ControlPipe() : m_data(nullptr), m_len(0), m_remainLen(0) {}
+	ControlPipe() : m_data(nullptr), m_len(0), m_remainLen(0), m_transferState(TransferStage::Setup) {}
 
-	void Send_i(const uint8_t * const data, const int len);
+	void OnInTransferComplite() noexcept;
+	void OnOutTransferComplite() noexcept;
+	void OnSetupTransferComplite() noexcept;
 
-	void OnInToken();
-} g_ctrlPipe;
-
+private:
+	void SendData(const uint8_t * const data, const int len) noexcept;
+	void OnDeviceRequest(const USBSetup * const setup) noexcept;
+	void GetDescriptor(const USBSetup * const setup) noexcept;
+	void GoToStage(const TransferStage newStage) noexcept;
+} g_defaultControlPipe;
 
 /*
 ==================
-ControlPipe::Send_i
+ControlPipe::GoToStage
 ==================
 */
-void ControlPipe::Send_i(const uint8_t * const data, const int len) {
-	m_data = const_cast<const uint8_t*>(data);
-	m_len = m_remainLen = len;
-	OnInToken();
+void ControlPipe::GoToStage(const TransferStage newStage) noexcept {
+	if constexpr(g_debug) {
+		if (m_transferState == TransferStage::DataIN && newStage == TransferStage::StatusIN) {
+			__BKPT(15);
+		}
+		if (m_transferState == TransferStage::DataOUT && newStage == TransferStage::StatusOUT) {
+			__BKPT(15);
+		}
+	}
+
+	if (newStage == TransferStage::Setup || newStage == TransferStage::DataOUT || newStage == TransferStage::StatusOUT) {
+		EPR[0].SetRxStatus(EpRxStatus::VALID);
+		EPR[0].SetTxStatus(EpTxStatus::STALL);
+	} else {
+		EPR[0].SetRxStatus(EpRxStatus::STALL);
+		EPR[0].SetTxStatus(EpTxStatus::VALID);
+	}
+
+	m_transferState = newStage;
 }
 
 /*
 ==================
-ControlPipe::OnInToken
+ControlPipe::SendData
 ==================
 */
-void ControlPipe::OnInToken() {
-	if (m_remainLen > g_ep0MaxPacketSize) {
-		m_remainLen -= g_ep0MaxPacketSize;
+void ControlPipe::SendData(const uint8_t * const data, const int len) noexcept {
+	m_data = const_cast<decltype(m_data)>(data);
+	m_len = m_remainLen = len;
 
-		WritePMA(m_data, g_ep0TxBufferStart, m_remainLen);
-		PBT[0].COUNT_TX = m_remainLen;
-		EPR[0].SetTxStatus(EpTxStatus::VALID);
+	m_transferState = TransferStage::DataIN;
+	OnInTransferComplite();
+}
+
+/*
+==================
+ControlPipe::OnInTransferComplite
+
+	Prepare to send next pice of data or go to status stage
+==================
+*/
+void ControlPipe::OnInTransferComplite() noexcept {
+	if (m_transferState == TransferStage::DataIN) {
+		if (m_remainLen > g_ep0MaxPacketSize) {
+			m_remainLen -= g_ep0MaxPacketSize;
+			WritePMA(m_data, g_ep0TxBufferStart, g_ep0MaxPacketSize);
+			PBT[0].COUNT_TX = g_ep0MaxPacketSize;
+			m_data += g_ep0MaxPacketSize;
+			GoToStage(TransferStage::DataIN);
+		} else if(m_remainLen) {
+			WritePMA(m_data, g_ep0TxBufferStart, m_remainLen);
+			PBT[0].COUNT_TX = m_remainLen;
+			m_remainLen = 0;
+			GoToStage(TransferStage::DataIN);
+		} else {
+			GoToStage(TransferStage::StatusOUT);				//Host transmit to us ZLP as status of all transfer
+		}
+	} else if (m_transferState == TransferStage::StatusIN) {	//Last stage in transfer, enable reception of next SETUP packets
+		GoToStage(TransferStage::Setup);
 	} else {
-		WritePMA(m_data, g_ep0TxBufferStart, m_remainLen);
-		PBT[0].COUNT_TX = m_remainLen;
-		EPR[0].SetTxStatus(EpTxStatus::VALID);
+		EXCEPT_HNDL(15);
 	}
 }
 
-#define  USBD_IDX_LANGID_STR                            0x00 
-#define  USBD_IDX_MFC_STR                               0x01 
-#define  USBD_IDX_PRODUCT_STR                           0x02
-#define  USBD_IDX_SERIAL_STR                            0x03 
-#define  USBD_IDX_CONFIG_STR                            0x04 
-#define  USBD_IDX_INTERFACE_STR                         0x05 
+/*
+==================
+ControlPipe::OnOutTransferComplite
+==================
+*/
+void ControlPipe::OnOutTransferComplite() noexcept {
+	if (m_transferState != TransferStage::StatusOUT) {
+		EXCEPT_HNDL(15);
+	}
+	GoToStage(TransferStage::Setup);
+}
 
 /*
 ==================
-GetDescriptor
+ControlPipe::OnSetupTransferComplite
 ==================
 */
-static void GetDescriptor(const USBSetup * const setup) noexcept {
+void ControlPipe::OnSetupTransferComplite() noexcept {
+	if (m_transferState != TransferStage::Setup) {
+		EXCEPT_HNDL(15);
+	}
+
+	uint16_t rxSize = PBT[0].COUNT_RX.GetReceivedSize();
+	USBSetup setup;
+	ReadPMA(reinterpret_cast<uint8_t*>(&setup), g_ep0RxBufferStart, rxSize);
+
+	switch (setup.bmRequestType & 0x1F) {
+		case USB_REQ_RECIPIENT_DEVICE:
+			OnDeviceRequest(&setup);
+			break;
+
+		case USB_REQ_RECIPIENT_INTERFACE:
+
+			break;
+
+		case USB_REQ_RECIPIENT_ENDPOINT:
+
+			break;
+
+		default:
+			//stall
+			break;
+	}
+}
+
+/*
+==================
+ControlPipe::GetDescriptor
+==================
+*/
+void ControlPipe::GetDescriptor(const USBSetup * const setup) noexcept {
 	uint16_t len;
-	uint8_t *pbuf;
+	const uint8_t *pbuf;
 
 	switch (setup->wValue >> 8) {
 		case USB_DESC_TYPE_DEVICE:
-			pbuf = reinterpret_cast<decltype(pbuf)>(const_cast<USBDeviceDescriptor*>(&g_devDesc));
+			pbuf = reinterpret_cast<decltype(pbuf)>(&g_devDesc);
 			len = sizeof g_devDesc;
 			break;
 
 		case USB_DESC_TYPE_CONFIGURATION:
-			
+			__NOP();
 			break;
 
 		case USB_DESC_TYPE_STRING:
@@ -172,7 +276,7 @@ static void GetDescriptor(const USBSetup * const setup) noexcept {
 
 	if (len && setup->wLength) {
 		len = len < setup->wLength ? len : setup->wLength;
-		g_ctrlPipe.Send_i(pbuf, len);
+		SendData(pbuf, len);
 	}
 }
 
@@ -180,10 +284,10 @@ static int8_t g_devAddress;
 
 /*
 ==================
-OnDeviceRequest
+ControlPipe::OnDeviceRequest
 ==================
 */
-static void OnDeviceRequest(const USBSetup * const setup) noexcept {
+void ControlPipe::OnDeviceRequest(const USBSetup * const setup) noexcept {
 	switch (setup->bRequest) {
 		case USB_REQ_GET_DESCRIPTOR:
 			GetDescriptor(setup);
@@ -191,7 +295,9 @@ static void OnDeviceRequest(const USBSetup * const setup) noexcept {
 
 		case USB_REQ_SET_ADDRESS:
 			g_devAddress = setup->wValue & 0x7F;
-			g_ctrlPipe.Send_i(nullptr, 0);			//ZLP ack
+
+			PBT[0].COUNT_TX = 0;					//send ZLP to host as status
+			GoToStage(TransferStage::StatusIN);
 			break;
 
 		case USB_REQ_SET_CONFIGURATION:
@@ -219,31 +325,7 @@ static void OnDeviceRequest(const USBSetup * const setup) noexcept {
 			break;
 	}
 }
-
-/*
-==================
-OnSetupStage
-==================
-*/
-static void OnSetupStage(const USBSetup * const setup) noexcept {
-	switch (setup->bmRequestType & 0x1F) {
-		case USB_REQ_RECIPIENT_DEVICE:
-			OnDeviceRequest(setup);
-			break;
-
-		case USB_REQ_RECIPIENT_INTERFACE:
-			
-			break;
-
-		case USB_REQ_RECIPIENT_ENDPOINT:
-			
-			break;
-
-		default:
-			//stall
-			break;
-	}
-}
+#pragma endregion
 
 /*
 ==================
@@ -268,40 +350,32 @@ static void OnReset() noexcept {
 
 /*
 ==================
-OnCorrectTranfer
+OnCorrectTransfer
 ==================
 */
-static void OnCorrectTranfer() noexcept {
+static void OnCorrectTransfer() noexcept {
 	while (USB->ISTR & USB_ISTR_CTR) {
 		EpNum endpNum = EpNum(USB->ISTR & USB_ISTR_EP_ID);
 
 		if (endpNum == EpNum::ep0) {
-			if (!(USB->ISTR & USB_ISTR_DIR)) {			//IN token
+			if (!(USB->ISTR & USB_ISTR_DIR)) {				//IN Transfer Complite
 				EPR[0].ClearTxCTR();
-				
-				PBT[0].COUNT_RX.SetMaxSize(0);			//tmp code
-				EPR[0].SetRxStatus(EpRxStatus::VALID);
 
-				if (g_devAddress) {
+				g_defaultControlPipe.OnInTransferComplite();
+
+				if (g_devAddress) {			//SET_ADDRESS perform processing after status stage
 					USB->DADDR = uint16_t(g_devAddress) | USB_DADDR_EF;
 					g_devAddress = 0;
 				}
 			} else {
-				if (USB->EP0R & USB_EP0R_SETUP) {		//SETUP token
+				if (USB->EP0R & USB_EP0R_SETUP) {			//SETUP Transfer Complite
 					EPR[0].ClearRxCTR();
 
-					uint16_t rxSize = PBT[0].COUNT_RX.GetReceivedSize();
-					USBSetup setup;
-					ReadPMA(reinterpret_cast<uint8_t*>(&setup), g_ep0RxBufferStart, rxSize);
-
-					OnSetupStage(&setup);
-				} else if (USB->EP0R & USB_EP0R_CTR_RX) {	//OUT token
+					g_defaultControlPipe.OnSetupTransferComplite();
+				} else if (USB->EP0R & USB_EP0R_CTR_RX) {	//OUT Transfer Complite
 					EPR[0].ClearRxCTR();
 
-					__NOP();
-
-					PBT[0].COUNT_RX.SetMaxSize(g_ep0MaxPacketSize);
-					EPR[0].SetRxStatus(EpRxStatus::VALID);
+					g_defaultControlPipe.OnOutTransferComplite();
 				}
 			}
 		} else {
@@ -317,7 +391,7 @@ USB_LP_CAN1_RX0_IRQHandler
 */
 extern "C" void USB_LP_CAN1_RX0_IRQHandler() {
 	if (USB->ISTR & USB_ISTR_CTR) {
-		OnCorrectTranfer();
+		OnCorrectTransfer();
 	}
 	if (USB->ISTR & USB_ISTR_RESET) {
 		USB->ISTR &= ~USB_ISTR_RESET;
@@ -361,7 +435,7 @@ void USBInit() {
 	NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
 
 	//Clear packet memory for debug purposes. Not realy need to do this.
-#ifdef DEBUG
-	for (unsigned int *pmem = reinterpret_cast<unsigned int*>(USB_PMAADDR); pmem < reinterpret_cast<unsigned int*>(USB_PMAADDR + 512 * 2); *(pmem++) = 0);
-#endif
+	if constexpr(g_debug) {
+		for (unsigned int *pmem = reinterpret_cast<unsigned int*>(USB_PMAADDR); pmem < reinterpret_cast<unsigned int*>(USB_PMAADDR + 512 * 2); *(pmem++) = 0);
+	}
 }

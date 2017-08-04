@@ -179,7 +179,7 @@ static constexpr uint16_t g_ep0TxBufferStart = g_ep0RxBufferStart + g_ep0MaxPack
 
 
 
-static_assert(!(g_pbtStart & 0b111), "Buffer table location must aligned to 8 bytes!");
+static_assert(!(g_pbtStart & 0b111), "Buffer table location must be aligned to 8 bytes!");
 static_assert(!(g_ep0RxBufferStart & 1), "Buffers addresses must be aligned to 2 bytes!");
 static_assert(	g_ep0MaxPacketSize == 64 || g_ep0MaxPacketSize == 32 || 
 				g_ep0MaxPacketSize == 16 || g_ep0MaxPacketSize == 8, "Endpoint 0 max packet size can be only 8, 16, 32 or 64 bytes!");

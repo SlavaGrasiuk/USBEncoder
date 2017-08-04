@@ -14,9 +14,9 @@ static constexpr bool g_debug = false;
 #define unlikely(x)		__builtin_expect((x),0)
 
 
-#define EXCEPT_HNDL()			\
+#define EXCEPT_HNDL(value)		\
 	if constexpr (g_debug) {	\
-		__asm("bkpt #0");		\
+		__BKPT(value);			\
 	} else {					\
 		while (true);			\
 	}
