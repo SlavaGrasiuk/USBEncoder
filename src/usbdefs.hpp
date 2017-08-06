@@ -58,22 +58,13 @@ struct[[gnu::packed]] USBStringDescriptor{
 	uint16_t wLANGID[langCount];
 };
 
-template<int stringLen>
-struct[[gnu::packed]] USBString{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	char string[stringLen];
-};
-
 struct[[gnu::packed]] HIDDescriptor{
 	uint8_t bLength;
 	uint8_t bDescriptorType;
 	uint16_t bcdHID;
 	uint8_t bCountryCode;
 	uint8_t bNumDescriptors;
-	uint8_t bDescriptorType;
-	uint16_t wDescriptorLength;
-	uint8_t bDescriptorType;
+	uint8_t bClassDescriptorType;
 	uint16_t wDescriptorLength;
 };
 
@@ -89,8 +80,10 @@ struct[[gnu::packed]] USBSetup{
 static_assert(sizeof(USBSetup) == 8, "Wrong USB setup structure size!");
 static_assert(sizeof(USBDeviceDescriptor) == 18, "Wrong USB device descriptor size!");
 #ifndef _MSC_VER		//Suppress IntelliSense errors, since it is don't understand [[gnu::packed]]
-static_assert(sizeof(USBConfigurationDescriptor) == 9, "Wrong USB configuration descriptor size!");
+static_assert(sizeof(USBConfigurationDescriptor) == 9, "Wrong USB configureation descriptor size!");
+static_assert(sizeof(USBInterfaceDescriptor) == 9, "Wrong USB interface descriptor size!");
 static_assert(sizeof(USBEndpointDescriptor) == 7, "Wrong USB endpoint descriptor size!");
+static_assert(sizeof(HIDDescriptor) == 9, "Wrong HID descriptor size!");
 #endif
 
 

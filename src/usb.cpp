@@ -44,7 +44,7 @@ static const ConfigDescriptor g_confDesc = {
 		USB_DESC_TYPE_CONFIGURATION,
 		sizeof(ConfigDescriptor),
 		1,
-		4,
+		1,
 		USBD_IDX_CONFIG_STR,
 		0x80,
 		0x32
@@ -63,21 +63,28 @@ static const ConfigDescriptor g_confDesc = {
 	{
 		sizeof(HIDDescriptor),
 		HID_DESCRIPTOR_TYPE,
-
+		0x11'01,
+		0,
+		1,
+		0x22,
+		//report descriptor size
 	},
 	{
 		sizeof(USBEndpointDescriptor),
 		USB_DESC_TYPE_ENDPOINT,
-
+		0x81,
+		0x03,
+		4,
+		0x0A
 	}
 };
 
 /*
-const USBString<> g_manufacturer = {
-	sizeof g_manufacturer,
-	USB_DESC_TYPE_STRING,
-	"Very manufacturer"
-};
+DECL_USB_STRING(g_mfcString,		"Дофига производитель")
+DECL_USB_STRING(g_productString,	"Дофига устройство")
+DECL_USB_STRING(g_serialString,		"Дофига серийный номер")
+DECL_USB_STRING(g_configString,		"дофига конфигурация")
+DECL_USB_STRING(g_interfString,		"Дофига интерфейс")
 */
 
 /*
@@ -316,35 +323,40 @@ void ControlPipe::GetDescriptor(const USBSetup * const setup) noexcept {
 			break;
 
 		case USB_DESC_TYPE_STRING:
-			switch (uint8_t(setup->wValue)) {
+			/*switch (uint8_t(setup->wValue)) {
 				case USBD_IDX_LANGID_STR:
 					
 					break;
 
 				case USBD_IDX_MFC_STR:
-					
+					pbuf = reinterpret_cast<decltype(pbuf)>(g_mfcString);
+					len = sizeof g_mfcString;
 					break;
 
 				case USBD_IDX_PRODUCT_STR:
-					
+					pbuf = reinterpret_cast<decltype(pbuf)>(g_productString);
+					len = sizeof g_productString;
 					break;
 
 				case USBD_IDX_SERIAL_STR:
-					
+					pbuf = reinterpret_cast<decltype(pbuf)>(g_serialString);
+					len = sizeof g_serialString;
 					break;
 
 				case USBD_IDX_CONFIG_STR:
-					
+					pbuf = reinterpret_cast<decltype(pbuf)>(g_configString);
+					len = sizeof g_configString;
 					break;
 
 				case USBD_IDX_INTERFACE_STR:
-					
+					pbuf = reinterpret_cast<decltype(pbuf)>(g_interfString);
+					len = sizeof g_interfString;
 					break;
 
 				default:
 					//ctrl error
 					return; 
-			}
+			}*/
 			break;
 
 		case USB_DESC_TYPE_DEVICE_QUALIFIER:
