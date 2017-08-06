@@ -31,6 +31,54 @@ static const USBDeviceDescriptor g_devDesc = {
 	1
 };
 
+struct ConfigDescriptor {
+	USBConfigurationDescriptor config;
+	USBInterfaceDescriptor interface;
+	HIDDescriptor hid;
+	USBEndpointDescriptor hidEndp;
+};
+
+static const ConfigDescriptor g_confDesc = {
+	{
+		sizeof(USBConfigurationDescriptor),
+		USB_DESC_TYPE_CONFIGURATION,
+		sizeof(ConfigDescriptor),
+		1,
+		4,
+		USBD_IDX_CONFIG_STR,
+		0x80,
+		0x32
+	},
+	{
+		sizeof(USBInterfaceDescriptor),
+		USB_DESC_TYPE_INTERFACE,
+		0,
+		0,
+		1,
+		0x03,
+		0,
+		1,
+		USBD_IDX_INTERFACE_STR
+	},
+	{
+		sizeof(HIDDescriptor),
+		HID_DESCRIPTOR_TYPE,
+
+	},
+	{
+		sizeof(USBEndpointDescriptor),
+		USB_DESC_TYPE_ENDPOINT,
+
+	}
+};
+
+/*
+const USBString<> g_manufacturer = {
+	sizeof g_manufacturer,
+	USB_DESC_TYPE_STRING,
+	"Very manufacturer"
+};
+*/
 
 /*
 ==================
@@ -77,6 +125,7 @@ private:
 	enum class TransferStage {
 		Setup,
 		DataIN,
+		DataINLast,
 		DataOUT,
 		StatusIN,
 		StatusOUT
@@ -88,6 +137,7 @@ public:
 	void OnInTransferComplite() noexcept;
 	void OnOutTransferComplite() noexcept;
 	void OnSetupTransferComplite() noexcept;
+	void Reset() noexcept;
 
 private:
 	void SendData(const uint8_t * const data, const int len) noexcept;
@@ -98,25 +148,61 @@ private:
 
 /*
 ==================
+ControlPipe::Reset
+==================
+*/
+void ControlPipe::Reset() noexcept {
+	EPR[0].SetType(EpType::CTRL);
+	EPR[0].SetAddress(0);
+
+	PBT[0].ADDR_TX = g_ep0TxBufferStart;
+	EPR[0].ClearTxDTOG();
+	EPR[0].SetTxStatus(EpTxStatus::NAK);
+
+	PBT[0].ADDR_RX = g_ep0RxBufferStart;
+	PBT[0].COUNT_RX.SetMaxSize(g_ep0MaxPacketSize);
+	EPR[0].ClearRxDTOG();
+	EPR[0].SetRxStatus(EpRxStatus::VALID);
+
+	m_transferState = TransferStage::Setup;
+	m_remainLen = m_len = 0;
+	m_data = nullptr;
+}
+
+/*
+==================
 ControlPipe::GoToStage
+
+	Switch endpoint status as described in RM0008 on page 633
 ==================
 */
 void ControlPipe::GoToStage(const TransferStage newStage) noexcept {
-	if constexpr(g_debug) {
-		if (m_transferState == TransferStage::DataIN && newStage == TransferStage::StatusIN) {
-			__BKPT(15);
-		}
-		if (m_transferState == TransferStage::DataOUT && newStage == TransferStage::StatusOUT) {
-			__BKPT(15);
-		}
-	}
+	switch (newStage) {
+		case TransferStage::StatusOUT:
+			EPR[0].SetRxStatus(EpRxStatus::VALID);
+			EPR[0].SetTxStatus(EpTxStatus::STALL);
+			EPR[0].SetStatusOut();
+			break;
 
-	if (newStage == TransferStage::Setup || newStage == TransferStage::DataOUT || newStage == TransferStage::StatusOUT) {
-		EPR[0].SetRxStatus(EpRxStatus::VALID);
-		EPR[0].SetTxStatus(EpTxStatus::STALL);
-	} else {
-		EPR[0].SetRxStatus(EpRxStatus::STALL);
-		EPR[0].SetTxStatus(EpTxStatus::VALID);
+		case TransferStage::Setup:
+			EPR[0].SetRxStatus(EpRxStatus::VALID);
+			EPR[0].SetTxStatus(EpTxStatus::NAK);
+			break;
+
+		case TransferStage::DataOUT:
+			EPR[0].SetRxStatus(EpRxStatus::VALID);
+			EPR[0].SetTxStatus(EpTxStatus::STALL);
+			break;
+
+		case TransferStage::DataINLast:
+			EPR[0].SetRxStatus(EpRxStatus::NAK);
+			EPR[0].SetTxStatus(EpTxStatus::VALID);
+			break;
+
+		default:		//DataIN or StatusIN
+			EPR[0].SetRxStatus(EpRxStatus::STALL);
+			EPR[0].SetTxStatus(EpTxStatus::VALID);
+			break;
 	}
 
 	m_transferState = newStage;
@@ -128,9 +214,9 @@ ControlPipe::SendData
 ==================
 */
 void ControlPipe::SendData(const uint8_t * const data, const int len) noexcept {
-	m_data = const_cast<decltype(m_data)>(data);
+	m_data = data;
 	m_len = m_remainLen = len;
-
+	
 	m_transferState = TransferStage::DataIN;
 	OnInTransferComplite();
 }
@@ -139,11 +225,11 @@ void ControlPipe::SendData(const uint8_t * const data, const int len) noexcept {
 ==================
 ControlPipe::OnInTransferComplite
 
-	Prepare to send next pice of data or go to status stage
+	Prepare for send next pice of data or go to status stage
 ==================
 */
 void ControlPipe::OnInTransferComplite() noexcept {
-	if (m_transferState == TransferStage::DataIN) {
+	if (m_transferState == TransferStage::DataIN || m_transferState == TransferStage::DataINLast) {
 		if (m_remainLen > g_ep0MaxPacketSize) {
 			m_remainLen -= g_ep0MaxPacketSize;
 			WritePMA(m_data, g_ep0TxBufferStart, g_ep0MaxPacketSize);
@@ -154,14 +240,13 @@ void ControlPipe::OnInTransferComplite() noexcept {
 			WritePMA(m_data, g_ep0TxBufferStart, m_remainLen);
 			PBT[0].COUNT_TX = m_remainLen;
 			m_remainLen = 0;
-			GoToStage(TransferStage::DataIN);
+			GoToStage(TransferStage::DataINLast);
 		} else {
+			//TODO send zlp if data size is multiple of g_ep0MaxPacketSizes
 			GoToStage(TransferStage::StatusOUT);				//Host transmit to us ZLP as status of all transfer
 		}
 	} else if (m_transferState == TransferStage::StatusIN) {	//Last stage in transfer, enable reception of next SETUP packets
 		GoToStage(TransferStage::Setup);
-	} else {
-		EXCEPT_HNDL(15);
 	}
 }
 
@@ -171,10 +256,10 @@ ControlPipe::OnOutTransferComplite
 ==================
 */
 void ControlPipe::OnOutTransferComplite() noexcept {
-	if (m_transferState != TransferStage::StatusOUT) {
-		EXCEPT_HNDL(15);
+	if (m_transferState == TransferStage::StatusOUT) {
+		EPR[0].ClearStatusOut();
+		GoToStage(TransferStage::Setup);
 	}
-	GoToStage(TransferStage::Setup);
 }
 
 /*
@@ -184,7 +269,7 @@ ControlPipe::OnSetupTransferComplite
 */
 void ControlPipe::OnSetupTransferComplite() noexcept {
 	if (m_transferState != TransferStage::Setup) {
-		EXCEPT_HNDL(15);
+		return;
 	}
 
 	uint16_t rxSize = PBT[0].COUNT_RX.GetReceivedSize();
@@ -226,7 +311,8 @@ void ControlPipe::GetDescriptor(const USBSetup * const setup) noexcept {
 			break;
 
 		case USB_DESC_TYPE_CONFIGURATION:
-			__NOP();
+			pbuf = reinterpret_cast<decltype(pbuf)>(&g_confDesc);
+			len = sizeof g_confDesc;
 			break;
 
 		case USB_DESC_TYPE_STRING:
@@ -329,27 +415,6 @@ void ControlPipe::OnDeviceRequest(const USBSetup * const setup) noexcept {
 
 /*
 ==================
-OnReset
-
-	Set EP0 to default state
-==================
-*/
-static void OnReset() noexcept {
-	EPR[0].SetType(EpType::CTRL);
-	EPR[0].SetAddress(0);
-
-	PBT[0].ADDR_TX = g_ep0TxBufferStart;
-	EPR[0].ClearTxDTOG();
-	EPR[0].SetTxStatus(EpTxStatus::NAK);
-
-	PBT[0].ADDR_RX = g_ep0RxBufferStart;
-	PBT[0].COUNT_RX.SetMaxSize(g_ep0MaxPacketSize);
-	EPR[0].ClearRxDTOG();
-	EPR[0].SetRxStatus(EpRxStatus::VALID);
-}
-
-/*
-==================
 OnCorrectTransfer
 ==================
 */
@@ -395,7 +460,7 @@ extern "C" void USB_LP_CAN1_RX0_IRQHandler() {
 	}
 	if (USB->ISTR & USB_ISTR_RESET) {
 		USB->ISTR &= ~USB_ISTR_RESET;
-		OnReset();
+		g_defaultControlPipe.Reset();
 		USB->DADDR = USB_DADDR_EF;		//enable function
 	}
 	if (USB->ISTR & USB_ISTR_SOF) {

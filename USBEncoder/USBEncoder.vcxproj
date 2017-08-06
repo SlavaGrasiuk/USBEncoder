@@ -32,12 +32,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
     <GNUConfigurationType>Debug</GNUConfigurationType>
-    <Toolchain>D:\msys32\home\Slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0</Toolchain>
+    <Toolchain>D:\devel\msys64\home\slava\arm-bare\gcc-arm-none-eabi-7.1.0</Toolchain>
     <OutDir>..\bin\$(ProjectName)-$(Configuration)-$(Platform)\</OutDir>
     <IntDir>..\temp\$(ProjectName)-$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
-    <Toolchain>D:\msys32\home\Slava\gcc\arm-bare\gcc-arm-none-eabi-7.1.0</Toolchain>
+    <Toolchain>D:\devel\msys64\home\slava\arm-bare\gcc-arm-none-eabi-7.1.0</Toolchain>
     <OutDir>..\bin\$(ProjectName)-$(Configuration)-$(Platform)\</OutDir>
     <IntDir>..\temp\$(ProjectName)-$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>

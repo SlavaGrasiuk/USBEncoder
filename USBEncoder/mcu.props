@@ -7,7 +7,7 @@
 -->
   <!-- VisualGDB provides BSP_ROOT and TOOLCHAIN_ROOT via environment when running Make. The line below will only be active if GNU Make is started manually. -->
   <PropertyGroup>
-    <BSP_ROOT Condition="'$(BSP_ROOT)' == ''">../../../msys32/home/Slava/gcc/arm-bare/gcc-arm-none-eabi-7.1.0</BSP_ROOT>
+    <BSP_ROOT Condition="'$(BSP_ROOT)' == ''">../../arm-bare/gcc-arm-none-eabi-7.1.0</BSP_ROOT>
     <EFP_BASE Condition="'$(EFP_BASE)' == ''">$(LOCALAPPDATA)/VisualGDB/EmbeddedEFPs</EFP_BASE>
     <TESTFW_BASE Condition="'$(TESTFW_BASE)' == ''">$(LOCALAPPDATA)/VisualGDB/TestFrameworks</TESTFW_BASE>
     <TOOLCHAIN_ROOT Condition="'$(TOOLCHAIN_ROOT)' == ''">D:/msys32/home/Slava/gcc/arm-bare/gcc-arm-none-eabi-7.1.0</TOOLCHAIN_ROOT>

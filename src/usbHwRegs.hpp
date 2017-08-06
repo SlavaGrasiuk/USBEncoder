@@ -90,17 +90,17 @@ enum class EpType : uint32_t {
 };
 
 enum class EpTxStatus : uint32_t {
-	DIS = 0x00'00'00'00,
-	STALL = 0x00'00'00'10,
-	NAK = 0x00'00'00'20,
-	VALID = 0x00'00'00'30
+	DIS		= 0x00'00'00'00,
+	STALL	= 0x00'00'00'10,
+	NAK		= 0x00'00'00'20,
+	VALID	= 0x00'00'00'30
 };
 
 enum class EpRxStatus : uint32_t {
-	DIS = 0x00'00'00'00,
-	STALL = 0x00'00'10'00,
-	NAK = 0x00'00'20'00,
-	VALID = 0x00'00'30'00
+	DIS		= 0x00'00'00'00,
+	STALL	= 0x00'00'10'00,
+	NAK		= 0x00'00'20'00,
+	VALID	= 0x00'00'30'00
 };
 
 
@@ -168,6 +168,14 @@ public:
 
 	inline void ClearRxCTR() noexcept {
 		m_hwReg &= (~USB_EP0R_CTR_RX) & USB_EPREG_MASK;
+	}
+
+	inline void SetStatusOut() {
+		m_hwReg = USB_EP_CTR_RX | USB_EP_CTR_TX | ((m_hwReg | USB_EP_KIND) & USB_EPREG_MASK);
+	}
+
+	inline void ClearStatusOut() {
+		m_hwReg = USB_EP_CTR_RX | USB_EP_CTR_TX | (m_hwReg & USB_EPKIND_MASK);
 	}
 };
 

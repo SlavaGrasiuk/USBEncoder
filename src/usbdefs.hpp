@@ -42,6 +42,41 @@ struct[[gnu::packed]] USBInterfaceDescriptor{
 	uint8_t iInterface;
 };
 
+struct[[gnu::packed]] USBEndpointDescriptor{
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	uint8_t bEndpointAddress;
+	uint8_t bmAttributes;
+	uint16_t wMaxPacketSize;
+	uint8_t bInterval;
+};
+
+template<int langCount>
+struct[[gnu::packed]] USBStringDescriptor{
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	uint16_t wLANGID[langCount];
+};
+
+template<int stringLen>
+struct[[gnu::packed]] USBString{
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	char string[stringLen];
+};
+
+struct[[gnu::packed]] HIDDescriptor{
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	uint16_t bcdHID;
+	uint8_t bCountryCode;
+	uint8_t bNumDescriptors;
+	uint8_t bDescriptorType;
+	uint16_t wDescriptorLength;
+	uint8_t bDescriptorType;
+	uint16_t wDescriptorLength;
+};
+
 struct[[gnu::packed]] USBSetup{
 	uint8_t bmRequestType;
 	uint8_t bRequest;
@@ -55,6 +90,7 @@ static_assert(sizeof(USBSetup) == 8, "Wrong USB setup structure size!");
 static_assert(sizeof(USBDeviceDescriptor) == 18, "Wrong USB device descriptor size!");
 #ifndef _MSC_VER		//Suppress IntelliSense errors, since it is don't understand [[gnu::packed]]
 static_assert(sizeof(USBConfigurationDescriptor) == 9, "Wrong USB configuration descriptor size!");
+static_assert(sizeof(USBEndpointDescriptor) == 7, "Wrong USB endpoint descriptor size!");
 #endif
 
 
@@ -85,3 +121,5 @@ static_assert(sizeof(USBConfigurationDescriptor) == 9, "Wrong USB configuration 
 #define  USB_REQ_RECIPIENT_INTERFACE                    0x01
 #define  USB_REQ_RECIPIENT_ENDPOINT                     0x02
 #define  USB_REQ_RECIPIENT_MASK                         0x03
+
+#define	 HID_DESCRIPTOR_TYPE							0x21
