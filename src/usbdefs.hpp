@@ -51,18 +51,11 @@ struct[[gnu::packed]] USBEndpointDescriptor{
 	uint8_t bInterval;
 };
 
-template<int langCount>
-struct[[gnu::packed]] USBStringDescriptor{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint16_t wLANGID[langCount];
-};
-
 template<int size>
-struct[[gnu::packed]] USBString {
+struct[[gnu::packed]] USBString{
 	uint8_t bLength;
 	uint8_t bDescriptorType;
-	uint16_t string[size];
+	uint16_t bString[size];
 };
 
 struct[[gnu::packed]] HIDDescriptor{
@@ -125,7 +118,22 @@ static_assert(sizeof(HIDDescriptor) == 9, "Wrong HID descriptor size!");
 #define	 HID_DESCRIPTOR_TYPE							0x21
 
 
-static constexpr uint16_t cp1251_unicode[] = {
+enum class LangID : uint16_t {
+	EnglishUS = 0x0409,
+	Russian = 0x0419,
+	//...
+};
+
+template<LangID langID, LangID... langIDs>		//At least one must be specified
+struct[[gnu::packed]] USBLangDescriptor{
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	LangID wLANGID[1 + sizeof... (langIDs)];
+
+	constexpr USBLangDescriptor() : bLength(sizeof *this), bDescriptorType(USB_DESC_TYPE_STRING), wLANGID{ langID, langIDs ... } {}
+};
+
+static constexpr uint16_t g_cp1251ToUnicode[] = {
 	0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
 	0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F,
 	0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017,
@@ -164,15 +172,15 @@ static constexpr uint16_t cp1251_unicode[] = {
 ==================
 operator""_toUSB
 
-	Create USBString struct from string literal
+	Create USBString struct from bString literal
 ==================
 */
-template<typename CharT, CharT... string>
-constexpr auto operator""_toUSB() {
-	USBString<sizeof... (string)> result = {
+template<typename CharT, CharT... bString>
+constexpr auto operator""_usb() {
+	USBString<sizeof... (bString)> result = {
 		sizeof result,
 		USB_DESC_TYPE_STRING,
-		{ cp1251_unicode[string] ... }
+		{ g_cp1251ToUnicode[bString] ... }
 	};
 	return result;
 };

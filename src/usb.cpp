@@ -23,7 +23,7 @@ static const USBDeviceDescriptor g_devDesc = {
 	0,
 	g_ep0MaxPacketSize,
 	1155,		//VID
-	22315,		//PID
+	22314,		//PID
 	0x02'00,
 	USBD_IDX_MFC_STR,
 	USBD_IDX_PRODUCT_STR,
@@ -31,7 +31,7 @@ static const USBDeviceDescriptor g_devDesc = {
 	1
 };
 
-struct ConfigDescriptor {
+struct[[gnu::packed]] ConfigDescriptor {
 	USBConfigurationDescriptor config;
 	USBInterfaceDescriptor interface;
 	HIDDescriptor hid;
@@ -63,7 +63,7 @@ static const ConfigDescriptor g_confDesc = {
 	{
 		sizeof(HIDDescriptor),
 		HID_DESCRIPTOR_TYPE,
-		0x11'01,
+		0x01'11,
 		0,
 		1,
 		0x22,
@@ -79,11 +79,19 @@ static const ConfigDescriptor g_confDesc = {
 	}
 };
 
-static const auto g_mfcString		= "Дофига производитель"_toUSB;
-static const auto g_productString	= "Дофига устройство"_toUSB;
-static const auto g_serialString	= "Дофига серийный номер"_toUSB;
-static const auto g_configString	= "дофига конфигурация"_toUSB;
-static const auto g_interfString	= "Дофига интерфейс"_toUSB;
+static const USBLangDescriptor<LangID::EnglishUS, LangID::Russian> g_langDesc;
+
+static const auto g_mfcStringRus		= "Дофига производитель"_usb;
+static const auto g_productStringRus	= "Дофига устройство"_usb;
+static const auto g_serialStringRus		= "Дофига серийный номер"_usb;
+static const auto g_configStringRus		= "дофига конфигурация"_usb;
+static const auto g_interfStringRus		= "Дофига интерфейс"_usb;
+
+static const auto g_mfcStringEng		= "Much Manufacturer"_usb;
+static const auto g_productStringEng	= "So Device"_usb;
+static const auto g_serialStringEng		= "Many Serial number"_usb;
+static const auto g_configStringEng		= "Wow Configuration"_usb;
+static const auto g_interfStringEng		= "Very Interface"_usb;
 
 /*
 ==================
@@ -292,15 +300,16 @@ void ControlPipe::OnSetupTransferComplite() noexcept {
 			break;
 
 		case USB_REQ_RECIPIENT_INTERFACE:
-
+			__BKPT(14);
 			break;
 
 		case USB_REQ_RECIPIENT_ENDPOINT:
-
+			__BKPT(14);
 			break;
 
 		default:
 			//stall
+			__BKPT(14);
 			break;
 	}
 }
@@ -328,32 +337,73 @@ void ControlPipe::GetDescriptor(const USBSetup * const setup) noexcept {
 		case USB_DESC_TYPE_STRING:
 			switch (uint8_t(setup->wValue)) {
 				case USBD_IDX_LANGID_STR:
-					
+					pbuf = reinterpret_cast<decltype(pbuf)>(&g_langDesc);
+					len = sizeof g_langDesc;
 					break;
 
 				case USBD_IDX_MFC_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(&g_mfcString);
-					len = sizeof g_mfcString;
+					if (LangID(setup->wIndex) == LangID::EnglishUS) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_mfcStringEng);
+						len = sizeof g_mfcStringEng;
+					} else if (LangID(setup->wIndex) == LangID::Russian) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_mfcStringRus);
+						len = sizeof g_mfcStringRus;
+					} else {
+						pbuf = nullptr;
+						len = 0;
+					}
 					break;
 
 				case USBD_IDX_PRODUCT_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(&g_productString);
-					len = sizeof g_productString;
+					if (LangID(setup->wIndex) == LangID::EnglishUS) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_productStringEng);
+						len = sizeof g_productStringEng;
+					} else if (LangID(setup->wIndex) == LangID::Russian) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_productStringRus);
+						len = sizeof g_productStringRus;
+					} else {
+						pbuf = nullptr;
+						len = 0;
+					}
 					break;
 
 				case USBD_IDX_SERIAL_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(&g_serialString);
-					len = sizeof g_serialString;
+					if (LangID(setup->wIndex) == LangID::EnglishUS) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_serialStringEng);
+						len = sizeof g_serialStringEng;
+					} else if (LangID(setup->wIndex) == LangID::Russian) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_serialStringRus);
+						len = sizeof g_serialStringRus;
+					} else {
+						pbuf = nullptr;
+						len = 0;
+					}
 					break;
 
 				case USBD_IDX_CONFIG_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(&g_configString);
-					len = sizeof g_configString;
+					if (LangID(setup->wIndex) == LangID::EnglishUS) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_configStringEng);
+						len = sizeof g_configStringEng;
+					} else if (LangID(setup->wIndex) == LangID::Russian) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_configStringRus);
+						len = sizeof g_configStringRus;
+					} else {
+						pbuf = nullptr;
+						len = 0;
+					}
 					break;
 
 				case USBD_IDX_INTERFACE_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(&g_interfString);
-					len = sizeof g_interfString;
+					if (LangID(setup->wIndex) == LangID::EnglishUS) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_interfStringEng);
+						len = sizeof g_interfStringEng;
+					} else if (LangID(setup->wIndex) == LangID::Russian) {
+						pbuf = reinterpret_cast<decltype(pbuf)>(&g_interfStringRus);
+						len = sizeof g_interfStringRus;
+					} else {
+						pbuf = nullptr;
+						len = 0;
+					}
 					break;
 			
 				default:
@@ -362,16 +412,9 @@ void ControlPipe::GetDescriptor(const USBSetup * const setup) noexcept {
 			}
 			break;
 
-		case USB_DESC_TYPE_DEVICE_QUALIFIER:
-			
-			break;
-
-		case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
-			
-			break;
-
 		default:
 			//ctrl error
+			__BKPT(14);
 			return;
 	}
 
@@ -389,6 +432,8 @@ ControlPipe::OnDeviceRequest
 ==================
 */
 void ControlPipe::OnDeviceRequest(const USBSetup * const setup) noexcept {
+	uint16_t status;
+
 	switch (setup->bRequest) {
 		case USB_REQ_GET_DESCRIPTOR:
 			GetDescriptor(setup);
@@ -402,27 +447,28 @@ void ControlPipe::OnDeviceRequest(const USBSetup * const setup) noexcept {
 			break;
 
 		case USB_REQ_SET_CONFIGURATION:
-			
+			__BKPT(14);
 			break;
 
 		case USB_REQ_GET_CONFIGURATION:
-			
+			__BKPT(14);
 			break;
 
 		case USB_REQ_GET_STATUS:
-			
+			status = 1;
+			SendData(reinterpret_cast<const uint8_t*>(&status), 2);
 			break;
 
 		case USB_REQ_SET_FEATURE:
-			
+			__BKPT(14);
 			break;
 
 		case USB_REQ_CLEAR_FEATURE:
-			
+			__BKPT(14);
 			break;
 
 		default:
-			
+			__BKPT(14);
 			break;
 	}
 }
