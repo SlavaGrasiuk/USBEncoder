@@ -79,13 +79,11 @@ static const ConfigDescriptor g_confDesc = {
 	}
 };
 
-/*
-DECL_USB_STRING(g_mfcString,		"Дофига производитель")
-DECL_USB_STRING(g_productString,	"Дофига устройство")
-DECL_USB_STRING(g_serialString,		"Дофига серийный номер")
-DECL_USB_STRING(g_configString,		"дофига конфигурация")
-DECL_USB_STRING(g_interfString,		"Дофига интерфейс")
-*/
+static const auto g_mfcString		= "Дофига производитель"_toUSB;
+static const auto g_productString	= "Дофига устройство"_toUSB;
+static const auto g_serialString	= "Дофига серийный номер"_toUSB;
+static const auto g_configString	= "дофига конфигурация"_toUSB;
+static const auto g_interfString	= "Дофига интерфейс"_toUSB;
 
 /*
 ==================
@@ -120,7 +118,6 @@ static void ReadPMA(uint8_t *out, const uint16_t PMABufAddr, const uint16_t byte
 		*dataOut++ = *pma++;
 	}
 }
-
 
 #pragma region Control Pipe
 
@@ -247,9 +244,15 @@ void ControlPipe::OnInTransferComplite() noexcept {
 			WritePMA(m_data, g_ep0TxBufferStart, m_remainLen);
 			PBT[0].COUNT_TX = m_remainLen;
 			m_remainLen = 0;
+			if (m_len % g_ep0MaxPacketSize) {
+				GoToStage(TransferStage::DataINLast);
+			} else {
+				GoToStage(TransferStage::DataIN);		//data size is multiple of g_ep0MaxPacketSizes, so last packet will be ZLP
+			}
+		} else if (m_transferState == TransferStage::DataIN) {
+			PBT[0].COUNT_TX = 0;						//Send ZLP as last packet
 			GoToStage(TransferStage::DataINLast);
 		} else {
-			//TODO send zlp if data size is multiple of g_ep0MaxPacketSizes
 			GoToStage(TransferStage::StatusOUT);				//Host transmit to us ZLP as status of all transfer
 		}
 	} else if (m_transferState == TransferStage::StatusIN) {	//Last stage in transfer, enable reception of next SETUP packets
@@ -323,40 +326,40 @@ void ControlPipe::GetDescriptor(const USBSetup * const setup) noexcept {
 			break;
 
 		case USB_DESC_TYPE_STRING:
-			/*switch (uint8_t(setup->wValue)) {
+			switch (uint8_t(setup->wValue)) {
 				case USBD_IDX_LANGID_STR:
 					
 					break;
 
 				case USBD_IDX_MFC_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(g_mfcString);
+					pbuf = reinterpret_cast<decltype(pbuf)>(&g_mfcString);
 					len = sizeof g_mfcString;
 					break;
 
 				case USBD_IDX_PRODUCT_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(g_productString);
+					pbuf = reinterpret_cast<decltype(pbuf)>(&g_productString);
 					len = sizeof g_productString;
 					break;
 
 				case USBD_IDX_SERIAL_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(g_serialString);
+					pbuf = reinterpret_cast<decltype(pbuf)>(&g_serialString);
 					len = sizeof g_serialString;
 					break;
 
 				case USBD_IDX_CONFIG_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(g_configString);
+					pbuf = reinterpret_cast<decltype(pbuf)>(&g_configString);
 					len = sizeof g_configString;
 					break;
 
 				case USBD_IDX_INTERFACE_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(g_interfString);
+					pbuf = reinterpret_cast<decltype(pbuf)>(&g_interfString);
 					len = sizeof g_interfString;
 					break;
-
+			
 				default:
 					//ctrl error
 					return; 
-			}*/
+			}
 			break;
 
 		case USB_DESC_TYPE_DEVICE_QUALIFIER:
