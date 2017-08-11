@@ -35,6 +35,9 @@
     <Filter Include="scmRTOS\port\cortex\mx-gcc">
       <UniqueIdentifier>{97639292-dcf2-4a68-9bf2-3a57b3db9273}</UniqueIdentifier>
     </Filter>
+    <Filter Include="USB">
+      <UniqueIdentifier>{16d71a1f-297f-4050-8be1-4e61d900854a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="USBEncoder-Debug.vgdbsettings">
@@ -91,9 +94,18 @@
       <Filter>scmRTOS</Filter>
     </ClInclude>
     <ClInclude Include="..\src\commdef.hpp" />
-    <ClInclude Include="..\src\usb.hpp" />
-    <ClInclude Include="..\src\usbHwRegs.hpp" />
-    <ClInclude Include="..\src\usbdefs.hpp" />
+    <ClInclude Include="..\src\Pipes.hpp">
+      <Filter>USB</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\usbdefs.hpp">
+      <Filter>USB</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\usbHwRegs.hpp">
+      <Filter>USB</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\usb.hpp">
+      <Filter>USB</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\startup.cpp" />
@@ -114,6 +126,12 @@
       <Filter>scmRTOS\port\cortex\mx-gcc</Filter>
     </ClCompile>
     <ClCompile Include="..\src\USBEncoder.cpp" />
-    <ClCompile Include="..\src\usb.cpp" />
+    <ClCompile Include="..\src\Pipes.cpp">
+      <Filter>USB</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\usb.cpp">
+      <Filter>USB</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UsbDevice.cpp" />
   </ItemGroup>
 </Project>

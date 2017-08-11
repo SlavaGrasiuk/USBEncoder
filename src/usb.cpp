@@ -6,93 +6,6 @@
 
 
 
-#define  USBD_IDX_LANGID_STR                            0x00 
-#define  USBD_IDX_MFC_STR                               0x01 
-#define  USBD_IDX_PRODUCT_STR                           0x02
-#define  USBD_IDX_SERIAL_STR                            0x03 
-#define  USBD_IDX_CONFIG_STR                            0x04 
-#define  USBD_IDX_INTERFACE_STR                         0x05 
-
-
-static const USBDeviceDescriptor g_devDesc = {
-	sizeof(USBDeviceDescriptor),
-	USB_DESC_TYPE_DEVICE,
-	0x02'00,	//usb 2.0
-	0,
-	0,
-	0,
-	g_ep0MaxPacketSize,
-	1155,		//VID
-	22314,		//PID
-	0x02'00,
-	USBD_IDX_MFC_STR,
-	USBD_IDX_PRODUCT_STR,
-	USBD_IDX_SERIAL_STR,
-	1
-};
-
-struct[[gnu::packed]] ConfigDescriptor {
-	USBConfigurationDescriptor config;
-	USBInterfaceDescriptor interface;
-	HIDDescriptor hid;
-	USBEndpointDescriptor hidEndp;
-};
-
-static const ConfigDescriptor g_confDesc = {
-	{
-		sizeof(USBConfigurationDescriptor),
-		USB_DESC_TYPE_CONFIGURATION,
-		sizeof(ConfigDescriptor),
-		1,
-		1,
-		USBD_IDX_CONFIG_STR,
-		0x80,
-		0x32
-	},
-	{
-		sizeof(USBInterfaceDescriptor),
-		USB_DESC_TYPE_INTERFACE,
-		0,
-		0,
-		1,
-		0x03,
-		0,
-		1,
-		USBD_IDX_INTERFACE_STR
-	},
-	{
-		sizeof(HIDDescriptor),
-		HID_DESCRIPTOR_TYPE,
-		0x01'11,
-		0,
-		1,
-		0x22,
-		//report descriptor size
-	},
-	{
-		sizeof(USBEndpointDescriptor),
-		USB_DESC_TYPE_ENDPOINT,
-		0x81,
-		0x03,
-		4,
-		0x0A
-	}
-};
-
-static const USBLangDescriptor<LangID::EnglishUS, LangID::Russian> g_langDesc;
-
-static const auto g_mfcStringRus		= "Дофига производитель"_usb;
-static const auto g_productStringRus	= "Дофига устройство"_usb;
-static const auto g_serialStringRus		= "Дофига серийный номер"_usb;
-static const auto g_configStringRus		= "дофига конфигурация"_usb;
-static const auto g_interfStringRus		= "Дофига интерфейс"_usb;
-
-static const auto g_mfcStringEng		= "Much Manufacturer"_usb;
-static const auto g_productStringEng	= "So Device"_usb;
-static const auto g_serialStringEng		= "Many Serial number"_usb;
-static const auto g_configStringEng		= "Wow Configuration"_usb;
-static const auto g_interfStringEng		= "Very Interface"_usb;
-
 /*
 ==================
 WritePMA
@@ -101,7 +14,7 @@ WritePMA
 	 - PMABufAddr - address of PMA relative to usb peripherial
 ==================
 */
-static void WritePMA(const uint8_t *in, const uint16_t PMABufAddr, const uint16_t byteCnt) noexcept {
+void WritePMA(const uint8_t *in, const uint16_t PMABufAddr, const uint16_t byteCnt) noexcept {
 	auto dataIn = reinterpret_cast<const uint16_t*>(in);
 	auto pma = reinterpret_cast<uint32_t*>(USB_PMAADDR + (PMABufAddr << 1));
 
@@ -118,7 +31,7 @@ ReadPMA
 	 - PMABufAddr - address of PMA relative to usb peripherial
 ==================
 */
-static void ReadPMA(uint8_t *out, const uint16_t PMABufAddr, const uint16_t byteCnt) noexcept {
+void ReadPMA(uint8_t *out, const uint16_t PMABufAddr, const uint16_t byteCnt) noexcept {
 	auto dataOut = reinterpret_cast<uint16_t*>(out);
 	auto pma = reinterpret_cast<const uint32_t*>(USB_PMAADDR + (PMABufAddr << 1));
 
@@ -325,91 +238,16 @@ void ControlPipe::GetDescriptor(const USBSetup * const setup) noexcept {
 
 	switch (setup->wValue >> 8) {
 		case USB_DESC_TYPE_DEVICE:
-			pbuf = reinterpret_cast<decltype(pbuf)>(&g_devDesc);
-			len = sizeof g_devDesc;
+			len = sizeof g_deviceDescriptor;
+			pbuf = reinterpret_cast<const uint8_t*>(&g_deviceDescriptor);
 			break;
 
 		case USB_DESC_TYPE_CONFIGURATION:
-			pbuf = reinterpret_cast<decltype(pbuf)>(&g_confDesc);
-			len = sizeof g_confDesc;
+			pbuf = GetFullConfigDescriptor(len, uint8_t(setup->wValue));
 			break;
 
 		case USB_DESC_TYPE_STRING:
-			switch (uint8_t(setup->wValue)) {
-				case USBD_IDX_LANGID_STR:
-					pbuf = reinterpret_cast<decltype(pbuf)>(&g_langDesc);
-					len = sizeof g_langDesc;
-					break;
-
-				case USBD_IDX_MFC_STR:
-					if (LangID(setup->wIndex) == LangID::EnglishUS) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_mfcStringEng);
-						len = sizeof g_mfcStringEng;
-					} else if (LangID(setup->wIndex) == LangID::Russian) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_mfcStringRus);
-						len = sizeof g_mfcStringRus;
-					} else {
-						pbuf = nullptr;
-						len = 0;
-					}
-					break;
-
-				case USBD_IDX_PRODUCT_STR:
-					if (LangID(setup->wIndex) == LangID::EnglishUS) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_productStringEng);
-						len = sizeof g_productStringEng;
-					} else if (LangID(setup->wIndex) == LangID::Russian) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_productStringRus);
-						len = sizeof g_productStringRus;
-					} else {
-						pbuf = nullptr;
-						len = 0;
-					}
-					break;
-
-				case USBD_IDX_SERIAL_STR:
-					if (LangID(setup->wIndex) == LangID::EnglishUS) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_serialStringEng);
-						len = sizeof g_serialStringEng;
-					} else if (LangID(setup->wIndex) == LangID::Russian) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_serialStringRus);
-						len = sizeof g_serialStringRus;
-					} else {
-						pbuf = nullptr;
-						len = 0;
-					}
-					break;
-
-				case USBD_IDX_CONFIG_STR:
-					if (LangID(setup->wIndex) == LangID::EnglishUS) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_configStringEng);
-						len = sizeof g_configStringEng;
-					} else if (LangID(setup->wIndex) == LangID::Russian) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_configStringRus);
-						len = sizeof g_configStringRus;
-					} else {
-						pbuf = nullptr;
-						len = 0;
-					}
-					break;
-
-				case USBD_IDX_INTERFACE_STR:
-					if (LangID(setup->wIndex) == LangID::EnglishUS) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_interfStringEng);
-						len = sizeof g_interfStringEng;
-					} else if (LangID(setup->wIndex) == LangID::Russian) {
-						pbuf = reinterpret_cast<decltype(pbuf)>(&g_interfStringRus);
-						len = sizeof g_interfStringRus;
-					} else {
-						pbuf = nullptr;
-						len = 0;
-					}
-					break;
-			
-				default:
-					//ctrl error
-					return; 
-			}
+			pbuf = GetStringDescriptor(len, uint8_t(setup->wValue), LangID(setup->wIndex));
 			break;
 
 		default:
@@ -524,7 +362,7 @@ extern "C" void USB_LP_CAN1_RX0_IRQHandler() {
 		g_defaultControlPipe.Reset();
 		USB->DADDR = USB_DADDR_EF;		//enable function
 	}
-	if (USB->ISTR & USB_ISTR_SOF) {
+/*	if (USB->ISTR & USB_ISTR_SOF) {
 		USB->ISTR &= ~USB_ISTR_SOF;
 
 	}
@@ -535,7 +373,7 @@ extern "C" void USB_LP_CAN1_RX0_IRQHandler() {
 	if (USB->ISTR & USB_ISTR_SUSP) {
 		USB->ISTR &= ~USB_ISTR_SUSP;
 
-	}
+	}*/
 }
 
 /*
@@ -554,10 +392,10 @@ void USBInit() {
 	USB->CNTR &= ~USB_CNTR_PDWN;			//Enable analog tranciver
 	__NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP();
 	USB->ISTR = 0;							//Clear pending interrupts
-	USB->BTABLE = 0x000;					//Set Btable Address
+	USB->BTABLE = g_pbtStart;				//Set Btable Address
 
 	//Enable interrupts, also clear FRES bit.
-	USB->CNTR = USB_CNTR_CTRM | USB_CNTR_WKUPM | USB_CNTR_SUSPM | USB_CNTR_RESETM | USB_CNTR_SOFM;
+	USB->CNTR = USB_CNTR_CTRM | USB_CNTR_RESETM /*| USB_CNTR_WKUPM | USB_CNTR_SUSPM | USB_CNTR_SOFM*/;
 	NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
 
 	//Clear packet memory for debug purposes. Not realy need to do this.

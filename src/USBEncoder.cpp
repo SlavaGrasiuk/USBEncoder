@@ -2,8 +2,6 @@
 #include "commdef.hpp"
 #include <stm32f1xx.h>
 #include "usb.hpp"
-#include <type_traits>
-#include <tuple>
 
 
 /*

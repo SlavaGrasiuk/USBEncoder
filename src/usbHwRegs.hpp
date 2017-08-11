@@ -45,6 +45,7 @@ struct PacketBufTableEntry {
 	union {
 		volatile uint16_t ADDR_TX;
 		volatile uint16_t ADDR_RX_0;
+		volatile uint16_t ADDR_TX_0;
 	};
 private:
 	uint16_t gap0;
@@ -52,6 +53,7 @@ public:
 	union {
 		volatile uint16_t COUNT_TX;
 		PacketBufTableCountRxReg COUNT_RX_0;
+		volatile uint16_t COUNT_TX_0;
 	};
 private:
 	uint16_t gap1;
@@ -59,6 +61,7 @@ public:
 	union {
 		volatile uint16_t ADDR_RX;
 		volatile uint16_t ADDR_RX_1;
+		volatile uint16_t ADDR_TX_1;
 	};
 private:
 	uint16_t gap2;
@@ -66,6 +69,7 @@ public:
 	union {
 		PacketBufTableCountRxReg COUNT_RX;
 		PacketBufTableCountRxReg COUNT_RX_1;
+		volatile uint16_t COUNT_TX_1;
 	};
 private:
 	uint16_t gap3;
@@ -184,7 +188,7 @@ static constexpr uint16_t g_pbtStart = 0;				//Start addres of Packet Buffer Tab
 static constexpr uint8_t  g_ep0MaxPacketSize = 64;		//Max Packet size for endpoint 0
 static constexpr uint16_t g_ep0RxBufferStart = (sizeof(PacketBufTableEntry) * 8) / 2;		//Start address of EP0 transmit buffer  (relative to usb peripherial)
 static constexpr uint16_t g_ep0TxBufferStart = g_ep0RxBufferStart + g_ep0MaxPacketSize;		//Start address of EP0 receive buffer  (relative to usb peripherial)
-
+static constexpr uint16_t g_freePMAStart = g_ep0TxBufferStart + g_ep0MaxPacketSize;			//Start address of free PMA
 
 
 static_assert(!(g_pbtStart & 0b111), "Buffer table location must be aligned to 8 bytes!");

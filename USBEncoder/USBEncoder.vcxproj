@@ -127,6 +127,7 @@
     <ClInclude Include="..\src\3rdParty\scmRTOS\ext\round-robin\round-robin.h" />
     <ClInclude Include="..\src\3rdParty\scmRTOS\port\cortex\mx-gcc\os_target.h" />
     <ClInclude Include="..\src\commdef.hpp" />
+    <ClInclude Include="..\src\Pipes.hpp" />
     <ClInclude Include="..\src\procsdef.hpp" />
     <ClInclude Include="..\src\scmRTOS_CONFIG.h" />
     <ClInclude Include="..\src\scmRTOS_extensions.h" />
@@ -141,9 +142,11 @@
     <ClCompile Include="..\src\3rdParty\scmRTOS\core\usrlib.cpp" />
     <ClCompile Include="..\src\3rdParty\scmRTOS\ext\recursive-mutex\recursive_mutex.cpp" />
     <ClCompile Include="..\src\3rdParty\scmRTOS\port\cortex\mx-gcc\os_target.cpp" />
+    <ClCompile Include="..\src\Pipes.cpp" />
     <ClCompile Include="..\src\startup.cpp" />
     <ClCompile Include="..\src\sysinit.cpp" />
     <ClCompile Include="..\src\usb.cpp" />
+    <ClCompile Include="..\src\UsbDevice.cpp" />
     <ClCompile Include="..\src\USBEncoder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

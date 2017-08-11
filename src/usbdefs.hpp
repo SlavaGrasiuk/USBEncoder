@@ -170,17 +170,17 @@ static constexpr uint16_t g_cp1251ToUnicode[] = {
 
 /*
 ==================
-operator""_toUSB
+operator""_usb
 
-	Create USBString struct from bString literal
+	Create USBString struct from string literal
 ==================
 */
-template<typename CharT, CharT... bString>
+template<typename CharT, CharT... string>
 constexpr auto operator""_usb() {
-	USBString<sizeof... (bString)> result = {
+	USBString<sizeof... (string)> result = {
 		sizeof result,
 		USB_DESC_TYPE_STRING,
-		{ g_cp1251ToUnicode[bString] ... }
+		{ g_cp1251ToUnicode[string] ... }
 	};
 	return result;
 };
